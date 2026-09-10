@@ -1,5 +1,9 @@
-<script>
-	let { title = 'PixiPalette' } = $props();
+<script lang="ts">
+	interface Props {
+		title?: string;
+	}
+
+	let { title = 'PixiPalette' }: Props = $props();
 </script>
 
 <section>

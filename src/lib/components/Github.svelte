@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 </script>
 
 <a href="https://github.com/gabreatwell/palette" aria-label="Github" target="_blank">

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Title from '$lib/components/Title.svelte';
 
 	let isMenuOpen = $state(false);

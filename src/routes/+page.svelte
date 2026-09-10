@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Palette from '$lib/components/Palette.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 </script>
@@ -12,6 +12,3 @@
 <main>
 	<Palette />
 </main>
-
-<style>
-</style>

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import SEO from '$lib/components/SEO.svelte';
 </script>
 
@@ -6,7 +6,6 @@
 	title="About - PixiPalette"
 	description="Learn about PixiPalette and our mission"
 	keywords="pixipalette, about pixipalette"
-	type="website"
 />
 
 <article>

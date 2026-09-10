@@ -1,11 +1,18 @@
-<script>
-	import { page } from '$app/stores';
+<script lang="ts">
+	import { page } from '$app/state';
 
-	/** @type {{title: string, description: string, keywords: string, image?: string, type?: string}} */
-	let { keywords, description, title, image, siteType = 'website' } = $props();
-	let url = $derived($page.url.href);
+	interface Props {
+		title: string;
+		description: string;
+		keywords: string;
+		image?: string;
+		siteType?: string;
+	}
+
+	let { keywords, description, title, image, siteType = 'website' }: Props = $props();
+	let url = $derived(page.url.href);
 	let siteName = 'PixiPalette';
-	let baseUrl = $derived($page.url.origin);
+	let baseUrl = $derived(page.url.origin);
 	let ogImage = $derived(image ? `${baseUrl}${image}` : `${baseUrl}/logos/pixipalette.webp`);
 </script>
 

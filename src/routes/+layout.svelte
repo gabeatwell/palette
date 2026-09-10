@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import '../app.css';
 	import Github from '$lib/components/Github.svelte';
 	import Nav from '$lib/components/Nav.svelte';

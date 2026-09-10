@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
 	let isOpen = $state(false);
-	let onToggle = $state();
+	let onToggle = $state<(isOpen: boolean) => void>();
 
 	function toggleMenu() {
 		isOpen = !isOpen;
 		console.log('Burger clicked, isOpen:', isOpen);
-		if (onToggle) onToggle(isOpen);
+		onToggle?.(isOpen);
 	}
 </script>
 

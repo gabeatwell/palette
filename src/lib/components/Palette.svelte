@@ -1,38 +1,46 @@
-<script>
+<script lang="ts">
 	let imageUrl = $state('');
-	let colors = $state([]);
+	let colors = $state<string[]>([]);
 	let imageInput;
 	let colorFormat = $state('rgb');
 
-	function handleImageUpload(event) {
-		const file = event.target.files[0];
+	function handleImageUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
 
 		if (file) {
 			const reader = new FileReader();
 
 			reader.onload = (e) => {
-				imageUrl = e.target.result;
-				extractColors(e.target.result);
+				const result = e.target?.result;
+				if (typeof result !== 'string') return;
+				imageUrl = result;
+				extractColors(result);
 			};
 
 			reader.readAsDataURL(file);
 		}
 	}
 
-	function extractColors(imageSrc) {
+	function parseRgb(rgb: string): number[] {
+		return rgb.match(/\d+/g)?.map(Number) ?? [];
+	}
+
+	function extractColors(imageSrc: string) {
 		const img = new Image();
 		img.src = imageSrc;
 
 		img.onload = () => {
 			const canvas = document.createElement('canvas');
 			const ctx = canvas.getContext('2d');
+			if (!ctx) return;
 			canvas.width = img.width;
 			canvas.height = img.height;
 
 			ctx.drawImage(img, 0, 0);
 
 			const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-			const colorMap = new Map();
+			const colorMap = new Map<string, number>();
 
 			// Sample colors with better spacing
 			for (let i = 0; i < imageData.length; i += 20) {
@@ -48,7 +56,7 @@
 				let isDistinct = true;
 
 				for (let existingColor of colorMap.keys()) {
-					const [er, eg, eb] = existingColor.match(/\d+/g).map(Number);
+					const [er, eg, eb] = parseRgb(existingColor);
 					const colorDiff = Math.sqrt(
 						Math.pow(r - er, 2) + Math.pow(g - eg, 2) + Math.pow(b - eb, 2)
 					);
@@ -73,9 +81,9 @@
 		};
 	}
 
-	function getContrastColor(rgb) {
+	function getContrastColor(rgb: string) {
 		// Extract RGB values from the rgb string
-		const [r, g, b] = rgb.match(/\d+/g).map(Number);
+		const [r, g, b] = parseRgb(rgb);
 
 		// Calculate relative luminance using the formula
 		const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
@@ -84,9 +92,9 @@
 		return luminance > 0.5 ? '#000000' : '#ffffff';
 	}
 
-	function convertColor(rgbStr, format) {
+	function convertColor(rgbStr: string, format: string) {
 		// Extract RGB values
-		const [r, g, b] = rgbStr.match(/\d+/g).map(Number);
+		const [r, g, b] = parseRgb(rgbStr);
 
 		switch (format) {
 			case 'hex':
@@ -99,13 +107,11 @@
 
 				const max = Math.max(r1, g1, b1);
 				const min = Math.min(r1, g1, b1);
-				let h,
-					s,
+				let h = 0,
+					s = 0,
 					l = (max + min) / 2;
 
-				if (max === min) {
-					h = s = 0;
-				} else {
+				if (max !== min) {
 					const d = max - min;
 					s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 					switch (max) {
