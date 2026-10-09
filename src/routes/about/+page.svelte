@@ -14,14 +14,14 @@
 
 		<h3>Discover your perfect palette</h3>
 
-		<p>
+		<p class="indent">
 			Have you ever stumbled upon a color in an image and wondered, "What color value is that?"
 			PixiPalette is here to answer that question. This web app allows you to upload an image and
 			extracts the dominant colors from it, providing you with three different color values. It's a
 			handy tool for designers, artists, or anyone who appreciates color.
 		</p>
 
-		<p class="second">
+		<p class="second indent">
 			PixiPalette is a simple, efficient, and free tool that helps you find the colors you love in
 			any image. Whether you're a designer looking for inspiration, an artist seeking the perfect
 			shade, or just curious about the colors in your favorite photo, PixiPalette makes it easy to
@@ -45,7 +45,7 @@
 			margin-top: 2em;
 
 			& h1 {
-				color: hsl(0, 0%, 41%);
+				color: hsl(0, 0%, 18%);
 				font-family: var(--sans-bold);
 				font-size: clamp(1.5rem, 6vw, 8rem);
 				font-weight: 800;
@@ -58,8 +58,9 @@
 				font-family: var(--sans);
 				font-size: clamp(1.15rem, 4vw, 2.75rem);
 				font-weight: 600;
-				margin-block: -0.5rem;
+				margin-block: -2rem;
 				padding: 0;
+				opacity: 0.5;
 			}
 
 			& p {
@@ -71,6 +72,11 @@
 				max-width: 90%;
 				margin-inline: auto;
 				margin-top: 5em;
+				text-align: left;
+
+				&.indent {
+					text-indent: 1em;
+				}
 			}
 
 			& .second {
