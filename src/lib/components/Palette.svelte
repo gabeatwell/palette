@@ -1,7 +1,7 @@
 <script lang="ts">
 	let imageUrl = $state('');
 	let colors = $state<string[]>([]);
-	let imageInput;
+	let imageInput: HTMLInputElement;
 	let colorFormat = $state('rgb');
 
 	function handleImageUpload(event: Event) {
@@ -55,7 +55,7 @@
 				const rgb = `rgb(${r},${g},${b})`;
 				let isDistinct = true;
 
-				for (let existingColor of colorMap.keys()) {
+				for (const existingColor of colorMap.keys()) {
 					const [er, eg, eb] = parseRgb(existingColor);
 					const colorDiff = Math.sqrt(
 						Math.pow(r - er, 2) + Math.pow(g - eg, 2) + Math.pow(b - eb, 2)
@@ -99,7 +99,7 @@
 		switch (format) {
 			case 'hex':
 				return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-			case 'hsl':
+			case 'hsl': {
 				// Convert RGB to HSL
 				const r1 = r / 255;
 				const g1 = g / 255;
@@ -129,6 +129,7 @@
 				}
 
 				return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+			}
 			default:
 				return rgbStr;
 		}
@@ -181,6 +182,14 @@
 		gap: 1.2rem;
 		min-height: 100dvh;
 		width: 100%;
+
+		@media (max-width: 500px) {
+			padding: 0.8rem;
+			width: 99%;
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+		}
 	}
 
 	.inner {
@@ -190,10 +199,122 @@
 		align-items: center;
 		justify-content: center;
 		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-		padding: 0.5rem 1rem;
+		padding: 0.75rem 1.25rem;
 		width: clamp(250px, 90vw, 1000px);
 		margin-bottom: 18em;
 		background-color: #fff;
+		border-radius: 0.3em;
+
+		@media (max-width: 500px) {
+			padding: 0.5rem;
+			margin-inline: auto;
+		}
+
+		.color-palette {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 0.6rem;
+			width: 100%;
+			padding: 0.5rem;
+			box-sizing: border-box;
+
+			@media (max-width: 500px) {
+				grid-template-columns: repeat(2, 1fr);
+				padding: 0;
+				width: 100%;
+			}
+
+			.color-box {
+				width: 100%;
+				height: 100%;
+				border-radius: 8px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				position: relative;
+				aspect-ratio: 1;
+
+				.color-value {
+					padding: 0.25rem 0.75rem;
+					border-radius: 4px;
+					font-family: var(--sans);
+					font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+					text-shadow: none;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					gap: 5rem;
+					text-align: center;
+					width: auto;
+					height: auto;
+					word-break: break-all;
+				}
+			}
+		}
+
+		.format-select {
+			padding: 0.5rem;
+			border: 2px solid hsl(0, 0%, 11%);
+			border-radius: 4px;
+			font-family: var(--sans-bold);
+			font-size: clamp(1rem, 2vw, 1.5rem);
+			letter-spacing: 5px;
+			background-color: hsl(0, 0%, 91%);
+			cursor: pointer;
+			width: 100%;
+			max-width: 200px;
+			margin-bottom: 0.5rem;
+			color: hsl(0, 0%, 11%);
+
+			&:hover {
+				border-color: #bdbdbd;
+			}
+
+			&:focus {
+				outline: none;
+				border-color: #242424;
+				box-shadow: 0 0 0 2px rgba(36, 36, 36, 0.1);
+
+				&:hover {
+					border-color: #242424;
+				}
+			}
+
+			& option {
+				padding: 0.5rem;
+				font-family: var(--sans);
+			}
+		}
+
+		.file-input {
+			color: hsl(0, 0%, 41%);
+			padding: 0.5rem 0.75rem;
+			padding-bottom: 1rem;
+			margin-bottom: 1.2rem;
+			border: none;
+			font-family: var(--sans);
+			font-size: clamp(0.875rem, 1.5vw, 1.22rem);
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
+			cursor: pointer;
+
+			&::file-selector-button {
+				margin-right: 1em;
+				padding: 0.5rem 1rem;
+				border: 1px solid hsl(0, 0%, 11%);
+				border-radius: 5px;
+				background-color: hsl(0, 0%, 90%);
+				color: hsl(0, 0%, 11%);
+				cursor: pointer;
+				font-size: clamp(0.875rem, 1.75vw, 1.5rem);
+				white-space: nowrap;
+
+				&:hover {
+					background-color: #e0e0e0;
+				}
+			}
+		}
 	}
 
 	.preview-image {
@@ -201,130 +322,5 @@
 		height: auto;
 		max-height: 400px;
 		object-fit: contain;
-	}
-
-	.color-palette {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: 0.6rem;
-		width: 100%;
-		padding: 0.5rem;
-		box-sizing: border-box;
-	}
-
-	.color-box {
-		width: 100%;
-		height: 100%;
-		border-radius: 8px;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		position: relative;
-		aspect-ratio: 1;
-	}
-
-	.color-value {
-		padding: 0.25rem 0.75rem;
-		border-radius: 4px;
-		font-family: var(--sans);
-		font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-		text-shadow: none;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 5rem;
-		text-align: center;
-		width: auto;
-		height: auto;
-		word-break: break-all;
-	}
-
-	.file-input {
-		color: hsl(0, 0%, 41%);
-		padding: 0.5rem 0.75rem;
-		padding-bottom: 1rem;
-		margin-bottom: 1.2rem;
-		border: none;
-		font-family: var(--sans);
-		font-size: clamp(0.875rem, 1.5vw, 1.22rem);
-		width: 100%;
-		max-width: 100%;
-		box-sizing: border-box;
-		cursor: pointer;
-
-		&::file-selector-button {
-			margin-right: 1em;
-			padding: 0.5rem 1rem;
-			border: none;
-			border-radius: 5px;
-			background-color: #f0f0f0;
-			color: hsl(0, 0%, 31%);
-			cursor: pointer;
-			font-size: clamp(0.875rem, 1.5vw, 1.22rem);
-			white-space: nowrap;
-
-			&:hover {
-				background-color: #e0e0e0;
-			}
-		}
-	}
-
-	.format-select {
-		padding: 0.5rem;
-		border: 1px solid #e0e0e0;
-		border-radius: 4px;
-		font-family: var(--sans-bold);
-		font-size: clamp(1rem, 2vw, 1.5rem);
-		letter-spacing: 5px;
-		background-color: transparent;
-		cursor: pointer;
-		width: 100%;
-		max-width: 200px;
-		margin-bottom: 0.5rem;
-		color: #242424;
-
-		&:hover {
-			border-color: #bdbdbd;
-		}
-
-		&:focus {
-			outline: none;
-			border-color: #242424;
-			box-shadow: 0 0 0 2px rgba(36, 36, 36, 0.1);
-
-			&:hover {
-				border-color: #242424;
-			}
-		}
-
-		& option {
-			padding: 0.5rem;
-			font-family: var(--sans);
-		}
-	}
-
-	@media (max-width: 500px) {
-		.wrapper {
-			padding: 0.8rem;
-			width: 99%;
-			position: absolute;
-			left: 50%;
-			transform: translateX(-50%);
-		}
-
-		.inner {
-			padding: 0.5rem;
-			margin-inline: auto;
-		}
-
-		.color-palette {
-			grid-template-columns: repeat(2, 1fr);
-			padding: 0;
-			width: 100%;
-		}
-
-		/* .color-value {
-			font-size: 0.75rem;
-		} */
 	}
 </style>

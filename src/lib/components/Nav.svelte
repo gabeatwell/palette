@@ -12,10 +12,11 @@
 	function toggleMenu() {
 		if (isMenuOpen) {
 			isClosing = true;
+
 			setTimeout(() => {
 				isMenuOpen = false;
 				isClosing = false;
-			}, 500);
+			}, 10);
 		} else {
 			isMenuOpen = true;
 		}
@@ -66,23 +67,19 @@
 		position: relative;
 
 		.nav-container {
-			max-width: 1200px;
+			max-width: 100%;
 			margin-inline: auto;
 			padding: 0;
 
 			.nav-content {
 				display: flex;
-				justify-content: space-between;
+				justify-content: space-around;
+
 				align-items: center;
-				height: 4em;
-				padding: 1.5rem 1rem 0 1rem;
+				block-size: auto;
 
-				@media (width <= 500px) {
-					padding: 0.5rem 1rem 0 1rem;
-				}
-
-				@media (min-width: 768px) {
-					height: 9em;
+				@media (width <= 1400px) {
+					justify-content: space-evenly;
 				}
 			}
 		}
@@ -100,9 +97,16 @@
 			padding: 0.5rem 0.75rem;
 			text-decoration: none;
 			color: hsl(0, 0%, 31%);
-			font-size: clamp(1.25rem, 3vw, 4rem);
-			font-weight: 900;
-			letter-spacing: 5px;
+			font-family: var(--sans-bold);
+			font-size: clamp(1.25rem, 2.25vw, 3rem);
+			font-weight: 600;
+			letter-spacing: 1px;
+			transform: scaleY(1.75);
+			margin-right: 1.2em;
+
+			&:nth-child(2) {
+				margin-right: 0;
+			}
 
 			&:hover {
 				background-color: hsl(0, 0%, 31%);
@@ -111,18 +115,17 @@
 				padding: 0.1rem 0.75rem;
 			}
 
-			@media (min-width: 768px) {
+			@media (width <= 768px) {
 				margin-right: 1em;
+				transform: scaleY(1);
 			}
 		}
 
 		.mobile-menu {
 			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
+			inset: 0;
 			width: 100%;
-			height: 100vh;
+			height: 100dvh;
 			background-color: #f0f0f0;
 			margin: 0;
 			padding: 0;
@@ -130,7 +133,7 @@
 			flex-direction: column;
 			justify-content: center;
 			align-items: center;
-			gap: 4em;
+			gap: 2em;
 			z-index: 50;
 			animation: slideDown 0.5s ease forwards;
 
@@ -138,7 +141,7 @@
 				animation: slideUp 0.5s ease forwards;
 			}
 
-			@media (min-width: 768px) {
+			@media (width >= 768px) {
 				display: none;
 			}
 
@@ -176,7 +179,7 @@
 			z-index: 51;
 			position: relative;
 
-			@media (min-width: 768px) {
+			@media (width >= 768px) {
 				display: none;
 			}
 
@@ -189,13 +192,15 @@
 			.bar {
 				width: 100%;
 				height: 5px;
-				background-color: hsl(0, 0%, 31%);
+				background-color: hsl(0, 0%, 11%);
 				transition: all 0.3s ease-in-out;
 				transform-origin: center;
 				border-radius: 5px;
 			}
 
 			&.active {
+				transform: translateX(1.3em) translateY(-1.3em);
+
 				.bar:first-child {
 					transform: translateY(10px) rotate(45deg);
 					background-color: hsl(0, 0%, 0%);

@@ -20,7 +20,6 @@
 		flex-direction: column;
 		gap: 2rem;
 		min-height: 100vh;
-		padding: 1rem;
 		background-color: #f0f0f0;
 	}
 </style>
