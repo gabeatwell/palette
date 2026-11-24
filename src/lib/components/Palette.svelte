@@ -1,4 +1,9 @@
 <script lang="ts">
+	import { parse, formatHex, converter } from 'culori';
+
+	const toHsl = converter('hsl');
+	const toOklch = converter('oklch');
+
 	let imageUrl = $state('');
 	let colors = $state<string[]>([]);
 	let imageInput: HTMLInputElement;
@@ -93,42 +98,23 @@
 	}
 
 	function convertColor(rgbStr: string, format: string) {
-		// Extract RGB values
-		const [r, g, b] = parseRgb(rgbStr);
+		if (format === 'rgb') return rgbStr;
+
+		const c = parse(rgbStr);
+		if (!c) return rgbStr;
 
 		switch (format) {
 			case 'hex':
-				return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+				return formatHex(c);
 			case 'hsl': {
-				// Convert RGB to HSL
-				const r1 = r / 255;
-				const g1 = g / 255;
-				const b1 = b / 255;
-
-				const max = Math.max(r1, g1, b1);
-				const min = Math.min(r1, g1, b1);
-				let h = 0,
-					s = 0,
-					l = (max + min) / 2;
-
-				if (max !== min) {
-					const d = max - min;
-					s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-					switch (max) {
-						case r1:
-							h = (g1 - b1) / d + (g1 < b1 ? 6 : 0);
-							break;
-						case g1:
-							h = (b1 - r1) / d + 2;
-							break;
-						case b1:
-							h = (r1 - g1) / d + 4;
-							break;
-					}
-					h /= 6;
-				}
-
-				return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+				const h = toHsl(c);
+				if (!h) return rgbStr;
+				return `hsl(${Math.round(h.h ?? 0)} ${Math.round(h.s * 100)}% ${Math.round(h.l * 100)}%)`;
+			}
+			case 'oklch': {
+				const o = toOklch(c);
+				if (!o) return rgbStr;
+				return `oklch(${(o.l * 100).toFixed(1)}% ${o.c.toFixed(3)} ${Math.round(o.h ?? 0)})`;
 			}
 			default:
 				return rgbStr;
@@ -154,6 +140,7 @@
 			<option value="rgb">RGB</option>
 			<option value="hex">HEX</option>
 			<option value="hsl">HSL</option>
+			<option value="oklch">OKLCH</option>
 		</select>
 
 		<div class="color-palette">
@@ -213,7 +200,7 @@
 		.color-palette {
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-			gap: 0.6rem;
+			gap: 1rem;
 			width: 100%;
 			padding: 0.5rem;
 			box-sizing: border-box;
@@ -226,7 +213,7 @@
 
 			.color-box {
 				width: 100%;
-				height: 100%;
+				height: 80%;
 				border-radius: 8px;
 				display: flex;
 				justify-content: center;
