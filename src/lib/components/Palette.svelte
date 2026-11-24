@@ -1,13 +1,28 @@
 <script lang="ts">
-	import { parse, formatHex, converter } from 'culori';
-
-	const toHsl = converter('hsl');
-	const toOklch = converter('oklch');
+	import { parse, formatHex, formatRgb, converter } from 'culori';
+	import type { Color } from 'culori';
 
 	let imageUrl = $state('');
 	let colors = $state<string[]>([]);
 	let imageInput: HTMLInputElement;
-	let colorFormat = $state('rgb');
+	let colorFormat = $state('');
+	let relativeColor = $state('');
+
+	const RELATIVE_TOKENS: Record<string, string> = {
+		rgb: 'r g b',
+		hsl: 'h s l',
+		hwb: 'h w b',
+		lab: 'l a b',
+		lch: 'l c h',
+		oklab: 'l a b',
+		oklch: 'l c h'
+	};
+
+	const toHsl = converter('hsl');
+	const toOklch = converter('oklch');
+	const toLab = converter('lab');
+	const toLch = converter('lch');
+	const toOklab = converter('oklab');
 
 	function handleImageUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -120,6 +135,77 @@
 				return rgbStr;
 		}
 	}
+
+	const LIGHT_BUMP = 0.15; // add 15% relative lightness so the change is visible
+
+	function relativeTransformed(
+		rgbStr: string,
+		space: string
+	): { syntax: string; resolved: Color | string } {
+		const origin = convertColor(rgbStr, colorFormat);
+		const base = parse(rgbStr);
+		if (!base) return { syntax: origin, resolved: rgbStr };
+
+		switch (space) {
+			case 'hsl': {
+				const t = toHsl(base);
+				if (!t) return { syntax: origin, resolved: base };
+				t.l = Math.min(1, (t.l ?? 0) + LIGHT_BUMP);
+				return { syntax: `hsl(from ${origin} h s ${Math.round(t.l * 100)}%)`, resolved: t };
+			}
+			case 'oklch': {
+				const t = toOklch(base);
+				if (!t) return { syntax: origin, resolved: base };
+				t.l = Math.min(1, (t.l ?? 0) + LIGHT_BUMP);
+				return {
+					syntax: `oklch(from ${origin} ${Math.round(t.l * 100)}% ${(t.c ?? 0).toFixed(3)} ${Math.round(t.h ?? 0)})`,
+					resolved: t
+				};
+			}
+			case 'oklab': {
+				const t = toOklab(base);
+				if (!t) return { syntax: origin, resolved: base };
+				t.l = Math.min(1, (t.l ?? 0) + LIGHT_BUMP);
+				return {
+					syntax: `oklab(from ${origin} ${Math.round(t.l * 100)}% ${(t.a ?? 0).toFixed(3)} ${(t.b ?? 0).toFixed(3)})`,
+					resolved: t
+				};
+			}
+			case 'lab': {
+				const t = toLab(base);
+				if (!t) return { syntax: origin, resolved: base };
+				t.l = Math.min(100, (t.l ?? 0) + LIGHT_BUMP * 100);
+				return {
+					syntax: `lab(from ${origin} ${t.l.toFixed(1)} ${(t.a ?? 0).toFixed(1)} ${(t.b ?? 0).toFixed(1)})`,
+					resolved: t
+				};
+			}
+			case 'lch': {
+				const t = toLch(base);
+				if (!t) return { syntax: origin, resolved: base };
+				t.l = Math.min(100, (t.l ?? 0) + LIGHT_BUMP * 100);
+				return {
+					syntax: `lch(from ${origin} ${t.l.toFixed(1)} ${(t.c ?? 0).toFixed(3)} ${Math.round(t.h ?? 0)})`,
+					resolved: t
+				};
+			}
+			default: {
+				// rgb / hwb have no single lightness channel → identity wrap
+				const tokens = RELATIVE_TOKENS[space] ?? 'r g b';
+				return { syntax: `${space}(from ${origin} ${tokens})`, resolved: base };
+			}
+		}
+	}
+
+	function preview(rgbStr: string) {
+		const origin = convertColor(rgbStr, colorFormat);
+		if (!relativeColor) return { text: origin, swatch: rgbStr };
+
+		const { syntax, resolved } = relativeTransformed(rgbStr, relativeColor);
+		// formatRgb keeps it as "rgb(r g b)" so getContrastColor + background both work
+		const swatch = typeof resolved === 'string' ? resolved : (formatRgb(resolved) ?? rgbStr);
+		return { text: syntax, swatch };
+	}
 </script>
 
 <div class="wrapper">
@@ -136,18 +222,33 @@
 			<img src={imageUrl} alt="Uploaded item" class="preview-image" />
 		{/if}
 
-		<select class="format-select" bind:value={colorFormat}>
-			<option value="rgb">RGB</option>
-			<option value="hex">HEX</option>
-			<option value="hsl">HSL</option>
-			<option value="oklch">OKLCH</option>
-		</select>
+		<div class="selects">
+			<select class="format-select" bind:value={colorFormat}>
+				<option value="" disabled>Color Format</option>
+				<option value="rgb">RGB</option>
+				<option value="hex">HEX</option>
+				<option value="hsl">HSL</option>
+				<option value="oklch">OKLCH</option>
+			</select>
+
+			<select class="format-select" bind:value={relativeColor}>
+				<option value="" disabled>Relative Color</option>
+				<option value="rgb">rgb()</option>
+				<option value="hsl">hsl()</option>
+				<option value="hwb">hwb()</option>
+				<option value="lab">lab()</option>
+				<option value="lch">lch()</option>
+				<option value="oklab">oklab()</option>
+				<option value="oklch">oklch()</option>
+			</select>
+		</div>
 
 		<div class="color-palette">
 			{#each colors as color}
-				<div class="color-box" style:background-color={color}>
-					<span class="color-value" style:color={getContrastColor(color)}>
-						{convertColor(color, colorFormat)}
+				{@const p = preview(color)}
+				<div class="color-box" style:background-color={p.swatch}>
+					<span class="color-value" style:color={getContrastColor(p.swatch)}>
+						{p.text}
 					</span>
 				</div>
 			{/each}
@@ -239,13 +340,26 @@
 			}
 		}
 
+		.selects {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 1em;
+			width: 100%;
+
+			@media (width <= 768px) {
+				flex-direction: column;
+				gap: 0;
+			}
+		}
+
 		.format-select {
 			padding: 0.5rem;
 			border: 2px solid hsl(0, 0%, 11%);
 			border-radius: 4px;
-			font-family: var(--sans-bold);
+			font-family: var(--sans);
 			font-size: clamp(1rem, 2vw, 1.5rem);
-			letter-spacing: 5px;
 			background-color: hsl(0, 0%, 91%);
 			cursor: pointer;
 			width: 100%;
