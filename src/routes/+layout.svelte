@@ -2,8 +2,15 @@
 	import '../app.css';
 	import Github from '$lib/components/Github.svelte';
 	import Nav from '$lib/components/Nav.svelte';
+	import { browser } from '$app/environment';
 
 	let { children } = $props();
+
+	$effect(() => {
+		if (browser && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/sw.js');
+		}
+	});
 </script>
 
 <main>
