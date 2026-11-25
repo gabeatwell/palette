@@ -10,10 +10,42 @@
 	}
 
 	let { keywords, description, title, image, siteType = 'website' }: Props = $props();
+
 	let url = $derived(page.url.href);
-	let siteName = 'PixiPalette';
 	let baseUrl = $derived(page.url.origin);
+	let siteName = 'PixiPalette';
 	let ogImage = $derived(image ? `${baseUrl}${image}` : `${baseUrl}/logos/pixipalette.webp`);
+
+	// JSON string only — no <script> tags here (avoids parser pitfalls)
+	let jsonLd = $derived.by(() => {
+		const schema =
+			siteType === 'article'
+				? {
+						'@context': 'https://schema.org',
+						'@type': 'Article',
+						headline: title,
+						description,
+						image: ogImage,
+						url,
+						inLanguage: 'en',
+						author: { '@type': 'Organization', name: siteName },
+						publisher: {
+							'@type': 'Organization',
+							name: siteName,
+							logo: { '@type': 'ImageObject', url: ogImage }
+						}
+					}
+				: {
+						'@context': 'https://schema.org',
+						'@type': 'WebSite',
+						name: siteName,
+						url: baseUrl,
+						description
+					};
+
+		// escape `<` so nothing can break out of the tag
+		return JSON.stringify(schema).replace(/</g, '\\u003c');
+	});
 </script>
 
 <svelte:head>
@@ -37,6 +69,7 @@
 	<meta property="og:image:alt" content={`${title} - ${siteName}`} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
+	<meta property="og:image:type" content="image/webp" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={title} />
@@ -44,28 +77,6 @@
 	<meta name="twitter:image" content={ogImage} />
 	<meta name="twitter:image:alt" content={`${title} - ${siteName}`} />
 
-	<script type="application/ld+json">
-    {JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": siteType === "article" ? "Article" : "WebSite",
-        "name": siteName,
-        "headline": title,
-        "description": description,
-        "url": url,
-        "image": ogImage,
-        ...(siteType === "article" && {
-            "author": { "@type": "Organization", "name": siteName },
-            "publisher": { "@type": "Organization", "name": siteName, "logo": ogImage },
-            "datePublished": new Date().toISOString()
-        }),
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-                "@type": "EntryPoint",
-                "urlTemplate": `${baseUrl}/?q={search_term_string}`
-            },
-            "query-input": "required name=search_term_string"
-        }
-    })}
-	</script>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags — jsonLd is internal + `<` escaped -->
+	{@html '<script type="application/ld+json">' + jsonLd + '</scr' + 'ipt>'}
 </svelte:head>

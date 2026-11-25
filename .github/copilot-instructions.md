@@ -12,9 +12,9 @@ Class Fields:
 class Todo {
 done = $state(false);
 	text = $state();
-	constructor(text) {
-		this.text = text;
-	}
+constructor(text) {
+this.text = text;
+}
 }
 Deep Reactivity: Only plain objects and arrays become deeply reactive.
 $state.raw

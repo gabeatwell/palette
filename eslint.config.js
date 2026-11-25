@@ -44,5 +44,11 @@ export default tseslint.config(
 				$host: 'readonly'
 			}
 		}
+	},
+	{
+		files: ['**/SEO.svelte'],
+		rules: {
+			'svelte/no-at-html-tags': 'off'
+		}
 	}
 );

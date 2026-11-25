@@ -137,8 +137,16 @@
 			z-index: 50;
 			animation: slideDown 0.5s ease forwards;
 
+			@media (prefers-reduced-motion: reduce) {
+				animation: none;
+			}
+
 			&.closing {
 				animation: slideUp 0.5s ease forwards;
+
+				@media (prefers-reduced-motion: reduce) {
+					animation: none;
+				}
 			}
 
 			@media (width >= 768px) {
